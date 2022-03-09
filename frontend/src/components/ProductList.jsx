@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
-import axios from 'axios';
-import {getBaseApiUrl} from "../helpers/utils";
 import ProductItem from "./ProductItem";
+import getProducts from "../helpers/api";
 
 
 const ProductList = () => {
@@ -45,27 +44,17 @@ const ProductList = () => {
         search(event.target.value);
     }
 
-    const search =  (page_number) => {
-        let baseApiUrl = getBaseApiUrl();
-        setIsLoading(true);
-        axios({
-            "method": "GET",
-            "url": `${baseApiUrl}/api/products/`,
-            params : {
-                search: search_term,
-                page: page_number
-            }
-        }).then((response) => {
-            setFilteredProductsCount(response.data.count)
-            setProductsList(response.data.results)
-            setCurrentPage(response.data.current)
-            setNextPage(response.data.next)
-            setPreviousPage(response.data.previous)
-        }).catch((error) => {
-            console.log(error)
-        })
-        setIsLoading(false);
-    };
+    const search = async (page_number) => {
+         getProducts(page_number, search_term)
+            .then(data => {
+                setProductsList(data.results);
+                setFilteredProductsCount(data.count);
+                setCurrentPage(data.current);
+                setNextPage(data.next);
+                setPreviousPage(data.previous);
+                setIsLoading(false);
+            });
+    }
 
     useEffect(() => {
         setIsLoading(true);
@@ -110,7 +99,7 @@ const ProductList = () => {
             <ProductItems/>
             <div className="flex justify-center mt-5 mb-5">
                 <div className="flex rounded-md mt-8">
-                    <button onClick={handlePrevious} disabled={!previous_page} className={get_button_styles(!previous_page) + " ml-0 rounded-l"} >
+                    <button onClick={handlePrevious} disabled={!previous_page} className={get_button_styles(!previous_page)} >
                         <span>Previous</span></button>
                     <button value={current_page} onClick={handlePageClick} className={get_button_styles(false) + " text-white bg-blue-500"}>
                         <span>{current_page}</span></button>
